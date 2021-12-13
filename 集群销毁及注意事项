@@ -1,0 +1,9 @@
+销毁集群内所有主机
+1. 首先在Handy主节点执行onestor-cli probe 182.100.76.21，获取集群主机列表，ip为Handy节点地址
+● onestor-cli probe 182.100.76.21
+2. 执行onestor-cli destroy，该命令会销毁集群内所有主机
+3. onestor-cli destroy --yes-i-really-really-mean-it
+4. 销毁密码Admin@stor
+销毁集群单个主机
+1. 首先在Handy主节点执行onestor-cli probe ip，获取集群主机列表，ip为handy节点地址
+2. 执行命令onestor-cli destroy --host ip ，ip为需要销毁的主机地址
