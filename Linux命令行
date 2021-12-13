@@ -1,0 +1,110 @@
+Linux虚拟机的一些相关配置命令行
+
+修改主机名和IP
+
+修改主机名
+
+永久性修改
+
+vim /etc/hostname
+
+● 在/etc/hostname文件中将主机名修改成新主机名，如上修改成vm01。这样，重启系统(reboot)后主机名就改为vm01了
+
+临时性修改
+
+hostname vm01
+
+● 调用hostname vm01，logout之后再登录，主机名就变成vm01了，但是如果没有修改/etc/hostname文件，重启之后，主机名还是会变成原来的。
+
+配置IP
+
+查看自己的网络信息：ifconfig
+
+修改IP（两种方式）
+
+1. ifconfig eth1 172.16.41.101(eth1是你准备修改的网卡，172.16.41.101改为你准备修改的IP，后续登录这个虚拟机就可以访问这个IP)
+2. vim /etc/network/interfaces,进入编辑模式修改IP（address）
+
+● 方式1虚拟机重启后，修改的IP失效；
+● 方式2永久性修改IP地址，重启后仍然有效。
+
+配置SSH服务
+
+检查SSH服务的状态
+
+service ssh status
+
+● ssh start/running, process 840表示已经开启
+● 若未开启，开启ssh服务：service ssh restart
+
+检查SSH服务的配置
+
+● vim /etc/ssh/sshd_config 修改PermitRootLogin项为yes
+● 改为yes之后是开放ssh登录root权限
+
+重启SSH服务
+
+service ssh restart
+
+配置更新源
+
+设置代理
+
+将“大网”的网络共享打开（右键属性共享允许）
+
+确认“小网”的地址
+
+● 启动大网的Internet连接共享后，会导致小网的IP地址被修改。所以要重新配置小网的IP地址。
+
+修改虚拟机网关
+
+vim /etc/network/interfaces 进入编辑模式修改IP
+
+● gateway（网关IP）改为自己本机的IP，DNS（dns -nameserves）也为自己本机的IP之后保存退出。
+
+配置源
+
+源可以方便自己以后更新软件，可以参照研发镜像源清单。
+
+修改源列表
+
+vim /etc/apt/sources.list 拷贝合适自己操作系统的源列表覆盖原本的内容，保存退出。
+
+● 通过cat /etc/issue命令可以查看操作系统的版本
+
+更新源列表
+
+apt-get update
+
+下载文件
+
+以下载uzip为例，只需要输入：apt-get install unzip，等待完成即可
+
+相关命令行总结
+
+系统基本命令
+修改root用户密码	sudo passwd root
+临时修改主机名	hostname vm01（vm01就是新的主机名）
+永久修改主机名	vim /etc/hostname
+查看历史命令行输入记录	history
+重启系统	reboot
+查看操作系统版本	cat /etc/issue
+
+网络
+查看网络状态	ifconfig
+临时设置网络IP，重启后失效	ifconfig eth1 172.16.41.101 netmask 255.255.0.0
+永久设置网络IP，掩码，DNS	修改文件vim /etc/network/interfaces
+开启网卡	ifconfig eth1 up
+关闭网卡	ifconfig eth1 down(如果你从eth1登录，又关闭了eth1，你的连接就会断开)
+
+SSH服务
+查看SSH服务状态	service ssh status
+重启SSH服务	service ssh restart
+查看SSH服务配置	cat /etc/ssh/sshd_config
+修改SSH服务配置	vim /etc/ssh/sshd_config
+
+配置源
+查看源配置	cat /etc/apt/sources.list
+修改源配置	vim /etc/apt/source.list
+更新源列表	apt-get update
+从源上下载文件	apt-get intall ceph(ceph就是需要下载的文件名称)
