@@ -1,0 +1,495 @@
+查看硬盘是固态还是机械
+三种方式：
+lsblk -d -o name,rota	//返回1就是机械（会转的），0是固态（不会转的）
+cat /sys/block/sda/queue/rotational	//单个（sda）
+grep ^ /sys/block/*/queue/rotational	//所有
+环境部署（四）：Linux下查看JDK安装路径
+
+批量创建存储卷
+#bin/bash
+for i in {1..3}
+do
+        onestor blk LUN_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':100, 'lun_name':'hmm_$i', 'description':'xxx$i', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        echo onestor blk LUN_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':100, 'lun_name':'hmm_$i', 'description':'xxx$i', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        echo $i
+        i++
+done
+
+
+#bin/bash
+for i in {1..3}
+do
+        onestor blk LUN_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':100, 'lun_name':'insovoq_$i', 'description':'xxx$i', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+done
+
+客户端挂载操作
+cat /etc/iscsi/initiatorname.iscsi  //查看客户端启动器 （这个组件没有的话配源下载 open-iscsi）
+iscsiadm -m node --logoutall=all  //退出所有target登录（需要先umount）
+iscsiadm -m session -R  //扫盘（扩容卷后更新卷的大小）
+iscsiadm -m discovery -t st -p 172.23.78.24 -l //发现卷并挂载卷（ip为高可用）
+sgdisk -o /dev/sdh  //格式化磁盘sdh
+mkfs.xfs -f /dev/sdh  //给磁盘sdh做xfs文件系统
+mount /dev/sdh /mnt/new_folder  //然后mount卷sdh （自己在/mnt下新建一个文件夹用于挂载）
+tgt-admin -s  //查看每个节点客户端挂在情况 
+//挂载多个相同大小的卷如何区分：
+//在Handy块存储，映射管理->卷，可以看到每个卷的唯一卷ID，客户端通过lsscsi或|| /dev/disk/by-path命令可以看到卷ID
+umount /dev/sdj /mnt/sdj_run_iops
+
+iqn.1994-05.com.redhat:f55164ba9a
+杀掉进程
+使用ps命令查看进程
+ps -ef
+ps -aux
+接口创建单个卷
+curl http://182.100.76.108/api/v3/onestor/bfde936d-e159-4cef-8d82-44144b8e4c00/blk/lun -X POST -d '{"diskpool_name": "Lcx_DiskPool1","pool_name": "Lcx_Block_test_Pool","lun_name": "lcxtesting111","lun_type": "thin","lun_size": 8,"description": "","pool_state": "normal","nodepool_name": "Lcx_NodePool","__async__": true}' -v -H "Cookie: XSRF-TOKEN=YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs; calamari_sessionid=7kyl3pxq9ikgb3msxd6db77i1kol3i0m; token=undefined" -H "X-XSRF-TOKEN: YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs" -H "Content-Type: application/json"
+* About to connect() to 182.100.76.108 port 80 (#0)
+*   Trying 182.100.76.108...
+* Connected to 182.100.76.108 (182.100.76.108) port 80 (#0)
+> POST /api/v3/onestor/bfde936d-e159-4cef-8d82-44144b8e4c00/blk/lun HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: 182.100.76.108
+> Accept: */*
+> Cookie: XSRF-TOKEN=YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs; calamari_sessionid=7kyl3pxq9ikgb3msxd6db77i1kol3i0m; token=undefined
+> X-XSRF-TOKEN: YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs
+> Content-Type: application/json
+> Content-Length: 221
+>
+* upload completely sent off: 221 out of 221 bytes
+< HTTP/1.1 200 OK
+< Date: Mon, 08 Nov 2021 07:08:45 GMT
+< Server: Apache
+< Vary: Accept,Cookie
+< Allow: GET, POST, DELETE, HEAD, OPTIONS, PATCH
+< Transfer-Encoding: chunked
+< Content-Type: application/json
+<
+* Connection #0 to host 182.100.76.108 left intact
+{"data": {"task_id": "dd19efde-f5c6-4351-8395-7f153b9e3db7"}, "result": [1, "successfully add task \"Create volume \"lcxtesting111\"\"", "\u6210\u529f\u6dfb\u52a0\u4efb\u52a1 \u201c\u521b\u5efa\u5377\u201clcxtesting111\u201d\u201d"], "req_id": -1}
+vdbench脚本
+# 记得关闭防火墙
+# 文件系统存储定义，指定目录结构
+# 使用单客户端，对/mnt/sdj_run_iops目录创建目录深度为1，宽度为1的目录，每个目录下有100个200M的文件
+hd=default,vdbench=/root/vdbench50406/,user=root,shell=ssh
+fsd=fsd1,anchor=/mnt/sdj_run_iops,depth=1,width=1,files=100,size=200MB
+
+# 文件系统工作负载定义
+# 指定文件系统存储定义fsd1，修改写这个目录下的文件，文件IO大小为1M，线程数32
+fwd=fwd1,fsd=fsd1,operation=write,xfersize=1MB,fileio=sequential,fileselect=sequential,openflags=o_direct,threads=32
+
+# 运行定义，执行工作强度和时长
+# 如果目录不存在就重新建立，先创建文件，接着修改写文件，持续时间十分钟，每10s输出一次结果
+rd=rd1,fwd=fwd*,fwdrate=max,format=restart,elapsed=600,interval=10
+
+
+
+# 单行 
+:<<eof
+①:<<! + !  ②: '+' ③:<<eof + eof
+在/root/vdbench50406目录下通过:
+./vdbench -t  							测试vdbench是否安装好
+./vdbench -f xxx.txt				执行测试脚本
+eof
+
+# vdbench脚本关键参数
+: '
+1. hd为联机客户端的ip地址
+2. vdbench指向vdbench的解压目录（vdbench的安装目录）
+3. anchor为写入目录的位置（自己挂载卷到Linux的那个目录-挂载点）
+4. width为目录深度
+5. depth为目录宽度
+
+6. size为文件大小
+		size=（100M,30,200M,30,1G,40）指定100M文件占30%,200M文件占30%,1G文件占40%
+
+7. threads为每个客户端的并发线程数(operation的线程数)
+
+8. xfersize为测试软件的读写IO块（文件IO大小）,xfersize=(4k,40,64k,40,1m,20),指定每种IO占的比例
+		例：fileio和fileselect是是文件操作方式，均区分sequential和random
+    
+9. Operation为操作类型
+		create是创建
+    write是改写
+    read是读取
+    rdpct=80,意味着读写比例为80%
+    
+10. fileio为顺序或随机
+11. elapsed为测试时间长度
+12. interval为测试结果收集打印的时间间隔,每行结果为interval内的时间平均值
+		interval=10,每10秒输出一次结果
+
+13. format文件预处理参数,为创建和重复使用测试目录的模式,有三个选择:
+		“no”不改变当前文件目录结构
+    “yes”删除当前的目录结构,重新安装fsd的要求来生成新的
+    “restart”是只创建那些不够的文件一级扩展那些大小不足的文件
+    
+14. openflags为指定是否不过客户端缓存，直接读取存储数据
+15. fsd 指文件系统存储定义，fsd=（fsd1-fsdn）
+16. fwd指定文件系统工作负责，fwd=(fwd1-fwdn)
+17. fwdrate是每秒的操作数,max是不做限制，按最大强度适应，也可以设置指定大小或递增变化等
+'
+单个客户端跑业务
+# 单个客户端跑业务
+hd=default,vdbench=/root/vdbench50406/,user=root,shell=ssh
+fsd=fsd1,anchor=/mnt/run_sdc,depth=1,width=1,files=100,size=200MB,share=yes
+fwd=default,fsd=fsd*,operation=write,xfersize=1MB,fileio=random,fileselect=random,openflags=o_direct,threads=32
+fwd=fwd1,fsd=fsd1
+rd=rd1,fwd=fwd*,fwdrate=max,format=restart,elapsed=600,interval=60
+
+hd=default,vdbench=/root/vdbench50406/,user=root,shell=ssh
+fsd=fsd1,anchor=/mnt/run_sdc,depth=1,width=1000,files=5000,size=400MB,share=yes
+fsd=fsd2,anchor=/mnt/run_sdd,depth=1,width=3000,files=10000,size=(200M,40,500M,30,2G,30),share=yes
+fwd=fwd1,fsd=fsd1,rdpct=80,xfersize=(1MB,60,2MB,40),fileio=random,fileselect=random,openflags=o_direct,threads=32
+fwd=fwd2,fsd=fsd2,rdpct=90,xfersize=(1M,10,2M,40,3M,50),fileio=random,fileselect=sequential,openflags=o_direct,threads=64
+rd=rd1,fwd=fwd*,fwdrate=max,format=restart,elapsed=864000,interval=10
+
+
+# 记得关闭防火墙
+# 文件系统存储定义，指定目录结构
+# 使用单客户端，对/mnt/sdj_run_iops目录创建目录深度为1，宽度为1000的目录，每个目录下有100个200M的文件
+hd=default,vdbench=/root/vdbench50406/,user=root,shell=ssh
+fsd=fsd1,anchor=/mnt/sdj_run_iops,depth=1,width=1000,files=2000,size=(20MB,40,100MB,60),share=yes
+# 文件系统工作负载定义
+# 指定文件系统存储定义fsd1，修改写这个目录下的文件，文件IO大小为1M占40%，64K占60%，线程数32
+fwd=fwd1,fsd=fsd1,operation=write,xfersize=(1MB,40,64KB,60),fileio=random,fileselect=sequential,openflags=o_direct,threads=32
+# 运行定义，执行工作强度和时长
+# 如果目录不存在就重新建立，先创建文件，接着修改写文件，持续时间30分钟，每10s输出一次结果
+rd=rd1,fwd=fwd*,fwdrate=max,format=restart,elapsed=1800,interval=10
+
+多个客户端跑业务
+同时在不同主机，不同目录跑不同负载
+***********主机 ***********
+hd=default,dbench=/home/Vdbench/,user=root,shell=ssh
+ hd=hd1,system=93.93.31.7
+ hd=hd2,system=93.93.41.8
+ hd=hd3,system=93.93.41.9
+**********存储目录************
+ fsd=fsd1,anchor=/tmp/yht/client1,depth=2,width=100,files=2000,size=100m,shared=yes
+ fsd=fsd2,anchor=/tmp/yht/client2,depth=1,width=1000,files=2000,zies=(20m,40,100m,60),shared=yes
+ fsd=fsd3,anchor=/tmp/yht/client3,depth=1000,width=1,files2000,size=1m,shared=yes
+***********负载（每台主机，每个目录，跑那个负载）************
+ fwd=fwd1,fsd=fsd1,host=hd1,operation=read,xfersize=(1m,40,64k,60),fileio=random,fileselect=sequantial,threads=32
+ fwd=fwd2,fsd=fsd2,host=hd2,operation=write,xfersize=64k,fileio=random,fileselect=sequantial,threads=32
+ fwd=fwd3,fsd=fsd3,host=hd3,rdpct=60,xfersize=4k,fileio=random,fileselect=sequantial,threads=32
+***********运行定义**********
+ rd=rd1,fwd=(fwd1-fwd3),fwdrate=max,format=restart,elapesed=600,interval=10
+ 注：fsd中shared，vdbench不允许不同的slave之间共享同一个目录结构下的所有文件，因为这样会带来很大的开销
+
+
+运行结果查看
+summary.html
+•	主要报告文件，显示为在每个报告间隔的每次运行生成的总工作负载，以及除第一个间隔外的所有间隔的加权平均值。
+interval：报告间隔序号
+I/O rate：每秒观察到的平均 I/O 速率
+MB sec：传输的数据的平均 MB 数
+bytes I/O：平均数据传输大小
+read pct：平均读取百分比
+resp time：以读/写请求持续时间度量的平均响应时间。所有 vdbench 时间都以毫秒为单位。
+resp max：在此间隔中观察到的最大响应时间。最后一行包含最大值总数。
+resp stddev：响应时间的标准偏差
+cpu% sys+usr：处理器繁忙 = 100（系统 + 用户时间）（Solaris、Windows、Linux）cpu% sys：处理器利用率：系统时间
+
+
+对于一个虚拟块设备，配置以下参数：
+1、HD：主机定义
+如果您希望展示当前主机，则设置 hd= localhost。如果希望指定一个远程主机，hd= label。
+system= IP 地址或网络名称。
+clients= 用于模拟服务器的正在运行的客户端数量。
+2、SD：存储定义
+sd= 标识存储的名称。
+host= 存储所在的主机的 ID。
+lun= 原始磁盘、磁带或文件系统的名称。vdbench 也可为您创建一个磁盘。
+threads= 对 SD 的最大并发 I/O 请求数量。默认为 8。
+hitarea= 调整读取命中百分比的大小。默认为 1m。
+openflags= 用于打开一个 lun 或一个文件的 flag_list。
+3、WD：工作负载定义
+wd= 标识工作负载的名称。
+sd= 要使用的存储定义的 ID。
+host= 要运行此工作负载的主机的 ID。默认设置为 localhost。
+rdpct= 读取请求占请求总数的百分比。
+rhpct= 读取命中百分比。默认设置为 0。
+whpct= 写入命中百分比。默认设置为 0。
+xfersize= 要传输的数据大小。默认设置为 4k。
+seekpct= 随机寻道的百分比。可为随机值。
+openflags= 用于打开一个 lun 或一个文件的 flag_list。
+iorate= 此工作负载的固定 I/O 速率。
+4、RD：运行定义
+rd= 标识运行的名称。
+wd= 用于此运行的工作负载的 ID。
+iorate= (#,#,...) 一个或多个 I/O 速率。
+curve：性能曲线（待定义）。
+max：不受控制的工作负载。
+elapsed= time：以秒为单位的运行持续时间。默认设置为 30。
+warmup= time：加热期，最终会被忽略。
+distribution= I/O 请求的分布：指数、统一或确定性。
+pause= 在下一次运行之前休眠的时间，以秒为单位。
+openflags= 用于打开一个 lun 或一个文件的 flag_list。
+
+对于一个文件系统，配置以下参数：
+1、HD：主机定义。与虚拟块设备相同。
+2、FSD：文件系统定义
+fsd= 标识文件系统定义的名称
+anchor= 将在其中创建目录结构的目录
+width= 要在定位符下创建的目录数
+depth= 要在定位符下创建的级别数
+files= 要在最低级别创建的文件数
+sizes= (size,size,...) 将创建的文件大小
+distribution= bottom（如果希望仅在最低级别创建文件）和 all（如果希望在所有目录中创建文件）
+openflags= 用于打开一个文件系统 (Solaris) 的 flag_list
+3、FWD：文件系统工作负载定义
+fwd= 标识文件系统工作负载定义的名称。
+fsd= 要使用的文件系统定义的 ID。
+host= 要用于此工作负载的主机的 ID。
+fileio= random 或 sequential，表示文件 I/O 将执行的方式。
+fileselect= random 或 sequential，标识选择文件或目录的方式。
+xfersizes= 数据传输（读取和写入操作）处理的数据大小。
+operation= mkdir、rmdir、create、delete、open、close、read、write、getattr 和 setattr。选择要执行的单个文件操作。
+rdpct= （仅）读取和写入操作的百分比。
+threads= 此工作负载的并发线程数量。每个线程需要至少 1 个文件。
+4、RD：运行定义
+fwd= 要使用的文件系统工作负载定义的 ID。
+fwdrate= 每秒执行的文件系统操作数量。
+format= yes / no / only / restart / clean / directories。在开始运行之前要执行的操作。
+operations= 覆盖 fwd 操作。选项相同。
+
+创建一致性组
+//创建一致性组
+#bin/bash
+for i in {1..124}
+do
+        onestor blk LUN_group_create -d "{'diskpool_name':'Hmm_Diskpool01', 'lun_group_name':'group_$i', 'lun_group_description':'description_$i', 'nodepool_name':'Hmm_Nodepool01'}"
+done
+
+创建业务主机
+#bin/bash
+for i in {1..5}
+do
+	onestor tgt TGT_host_create -d "{'host_name_tgt':'host_to_$i', 'host_os_type':'Linux', 'host_ip_tgt':'', 'host_description':'description_$i', 'initiators':[{'chap_id_in':'', 'chap_id_out':'', 'iqn_name':'iqn.1995-05.com.redhat:74c5c5a913cc'}], 'nodepool_name':''}"
+	done
+  
+  #bin/bash
+for i in {1..2}
+do
+        onestor tgt TGT_host_create -d "{'host_name_tgt':'test_host_$i', 'host_os_type':'Linux', 'host_ip_tgt':'182.100.76.24', 'host_description':'description_$i', 'initiators':[{'iqn_name':'error_iqn_$i'}], 'nodepool_name':'Hmm_Nodepool01'}"
+done
+
+删除业务主机
+onestor tgt TGT_host_delete_bu_id -d "{'host_id_tgt':[4], 'nodepool_name':''}"
+创建业务主机组
+onestor tgt TGT_host_group_create -d "{'host_group_name':'newgroup$i', 'nodepool_name':'', 'description':''}"
+删除业务主机组
+onestor tgt TGT_host_group_delete -d "{'nodepool_name':'', 'host_group_id':['2']}"
+创建快照
+onestor blk SNAP_create_rosnap -d "{'data_pool':'Hmm_testpool01', 'description':'description$i', 'lun_name':'insovo-1T', 'name':'volume_sanpshot$'}"
+
+#/bin/bash
+for i in {1..2044}
+do
+        onestor blk SNAP_create_rosnap -d "{'lun_name': 'ran_20199', 'name': 'listen_ran20199_$i','data_pool': 'Lcx_Block_test_Pool','description':''}"
+done
+sleep 5 
+创建一致性组快照
+#bin/bash
+for i in {1..63}
+do
+        onestor blk SNAP_create_csrosnap "{'description':'csrosnap$i', 'disk_pool':'Hmm_Diskpool01', 'lun_group':'group_124', 'name':'csrosnap_$i'}"
+done
+
+创建可写快照
+onestor blk SNAP_create_rwsnap -d "{'srcpool':'Hmm_Diskpool01', 'srclun':'insovo-1T', 'snapname':'snapshot2045', 'rwsnapname':'rw2047', 'dstpool':'Hmm_testpool01', 'dstcription':''}"
+创建卷拷贝
+onestor blk COPY_create -d
+"{'description':'sdvewt43','isautostart':'0','mstlunid':'73334866578297678','name':'Copyname','slvunid':'73334866418615464','speed':'2','nodepool_name':'lnpool'}"
+获取id并放入回收站
+
+● 获取卷id并放入回收站
+
+//id.sh
+#/bin/bash
+onestor blk LUN_detail_query -d "{'lun_name':'lun2-29', 'diskpool_name':'hp'}" | grep "lun_id" | awk {'print $2'} > 1.txt
+sed -i 's/,//g' 1.txt
+sed -i 's/"//g' 1.txt
+cat 1.txt | while read line
+do
+echo "$line"
+onestor blk LUN_trash_move -d
+"{'diskpool_name':'hp', 'lun_list':['$line'], 'pool_state':'normal', 'is_batch':'true', 'nodepool_name':'nodepool'}"
+done
+
+批量创建存储卷并放入回收站
+
+#/bin/bash
+for i in {1..400}
+do
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'', 'pool_name':'', 'lun_size':5, 'lun_prefix':'lun_trash_$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':'nodepool'}"
+	onestor blk LUN_detail_query -d
+"{'lun_name':'lun_trash_$i-0', 'diskpool_name':''}" | grep "lun_id" | awk {'print $2'} > 1.txt
+	sed -i 's/,//g' 1.txt
+	sed -i 's/"//g' 1.txt
+	cat 1.txt | while read line
+	do
+	echo "$line"
+	onestor blk LUN_trash_move -d
+	"{'diskpool_name':'', 'lun_list':['$line'], 'pool_state':'normal', 'is_batch':'true', 'nodepool_name':'nodepool'}"
+		done
+	done
+
+批量创建存储卷
+
+//lun-wxx.sh
+#/bin/bash
+for i in{1..2}
+do
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':5, 'lun_prefix':'Hmm_copy$i-', 'lun_num':64, 'description':'', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+	sleep 5
+done
+
+批量克隆存储卷
+
+//clun1.sh
+#/bin/bash
+for j in {4..800000}
+do
+	onestor blk CLONE_create_volume -d
+"{'pool_name':'POol123_-_-wxx_-123_-_-_-_-_-_', 'lun_name':'0825', 'diskpool_name':'1231', 'dest_name':'0903_cone-$j', 'lun_size':1024, 'description':''}"
+done
+
+批量创建快照、可写快照
+
+//lun_creat-write.sh
+#/bin/bash
+for i in {1..398}
+do
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'', 'pool_name':'', 'lun_size':5, 'lun_prefix':'bbb-$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':''}"
+	sleep 5
+	onestor blk SNAP_create_rosnap -d
+"{'data_pool':'', 'lun_name':'bbb-$i-0', 'rosnap_name':'bbb-rosnap-$i', 'dest_pool':'', 'name':'bbb-wrsnap-$i-$k', 'description':''}"
+	done
+done
+
+批量创建卷拷贝
+
+//lunscopy_creat.sh
+#/bin/bash
+k = 0
+lun1 = 0
+lun2 = 0
+for i in {1..2..2}
+do
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'', 'pool_name':'', 'lun_sizw':5, 'lun_prefix':'wxx_copy_$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':''}"
+	let k = i+1
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'', 'pool_name':'', 'lun_size':5, 'lun_prefix':'wxx_copy_$k-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':''}"
+	onestor blk LUN_detail_query -d
+"{'lun_name':'wxx_copy_$-0', 'diskpool_name':''}" | grep "lun_id" | awk {'print $2'} > copy_1.txtonestor blk LUN_detail_query -d 
+	onestor blk LUN_detail_query -d
+"{'lun_name':'wxx_copy_$-0', 'diskpool_name':''}" | grep "lun_id" | awk {'print $2'} > copy_2.txt
+	sed -i 's/,//g' copy_1.txt
+	sed -i 's/"//g' copy_1.txt
+	sed -i 's/,//g' copy_2.txt
+	sed -i 's/"//g' copy_2.txt
+	paste copy_1.txt copy_2.txt > copy_3.txt
+	lun1 = $(cat copy_3.txt | awk{'print $1'})
+	lun2 = $(cat copy_3.txt | awk{'print $2'})
+	onestor blk COPY_create -d
+	"{'description':'', 'isautostart':0, 'mstlunid':'$lun1', 'name':'5', 'slvlunid':'$lun2', 'speed':'2', 'nodepool_name':''}"
+	done
+  
+  
+  
+  
+#bin/bash
+k=0
+lun1=0
+lun2=0
+for i in {1..2..2}
+do
+        onestor blk LUN_batch_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':5, 'lun_prefix':'hmm_copy_$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        echo onestor blk LUN_batch_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':5, 'lun_prefix':'hmm_copy_$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        let k=i+1
+        onestor blk LUN_batch_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':5, 'lun_prefix':'hmm_copy_$k-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        echo onestor blk LUN_batch_create -d "{'diskpool_name':'Hmm_Diskpool01', 'pool_name':'Hmm_testpool01', 'lun_size':5, 'lun_prefix':'hmm_copy_$k-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':'Hmm_Nodepool01'}"
+        onestor blk LUN_detail_query -d "{'lun_name':'hmm_copy_$i-0', 'diskpool_name':'Hmm_Diskpool01'}" | grep "lun_id" | awk {'print $2'} > copy_1.txt
+        onestor blk LUN_detail_query -d "{'lun_name':'hmm_copy_$k-0', 'diskpool_name':'Hmm_Diskpool01'}" | grep "lun_id" | awk {'print $2'} > copy_2.txt
+        sed -i 's/,//g' copy_1.txt
+        sed -i 's/"//g' copy_1.txt
+        sed -i 's/,//g' copy_2.txt
+        sed -i 's/"//g' copy_2.txt
+        paste copy_1.txt copy_2.txt > copy_3.txt
+        lun1=$(cat copy_3.txt | awk {'print $1'})
+        lun2=$(cat copy_3.txt | awk {'print $2'})
+        onestor blk COPY_create -d "{'description':'', 'isautostart':0, 'mstlunid':'$lun1', 'name':'5', 'slvlunid':'$lun2', 'speed':'2', 'nodepool_name':'Hmm_Nodepool01'}"
+done
+
+
+批量创建卷迁移
+
+//lunmove_create.sh
+#/bin/bash
+for i in {1..5}
+do
+	onestor blk LUN_batch_create -d
+"{'diskpool_name':'', 'pool_name':'', 'lun_size':5, 'lun_prefix':'wxx_move_$i-', 'lun_num':1, 'description':'', 'pool_state':'normal', 'nodepool_name':''}"
+	onestor blk LUN_detail_query -d "{'lun_name':'wxx_move_$i-0', 'diskpool_name':''}" | grep "lun_id" |awk {'print $2'} > move.txt
+	sed -i 's/,//g' move.txt
+	sed -i 's/"//g' move.txt
+	cat move.txt | while read line
+	do
+		echo "$line"
+		onestor blk Migration_create -d
+	"{'name':'lunmove_$i', 'description':'', 'mstlunid':'$line', 'slvlunid':'', 'diskpool_name':'', 'pool_name':'', 'speed':2, 'isAutosplit':1, 'slvlunname':'lunmove_target_$i', 'nodepool_name':''}"
+		done
+	done
+
+性能按钮开关批量开启/关闭
+
+//switch_pref.sh
+#/bin/bash
+	onestor blk LUN_detail_query -d
+"{'lun_name':'lun1-0', 'diskpool_name':''}" | grep "lun_id" |awk {'print $2'} > 2.txt
+	sed -i 's/,//g' 2.txt
+	sed -i 's/"//g' 2.txt
+	cat 2.txt | while read line
+	do
+	echo "$line"
+	onestor blk LUN_pref_switch -d
+"{'diskpool_name':'', 'lun_id':'$line', 'pref_switch':'on', 'nodepool_name':''}" #开启
+	onestor blk LUN_pref_switch -d
+"{'diskpool_name':'', 'lun_id':'$line', 'pref_switch':'off', 'nodepool_name':''}" #关闭
+done
+
+批量创建可写快照
+
+//write-snap.sh
+#/bin/bash
+for i in {1..389}
+do
+	onestor blk SNAP_create_rwsnap -d "{'data_pool':'', 'lun_name':'lun-0', 'rosnap_name':'lun-0-snap', 'dest_pool':'', 'name':'write_snap_lun-0-$i', 'description':''}"
+		sleep 5
+	done
+
+公共参数：
+
+● diskpool_name：硬盘池名
+● pool_name：存储池名
+● parent_lun：父卷名
+● dest_name：克隆卷名
+● data_pool：数据池名
+● nodepool_name：节点池名
+vi中跳到文件的第一行和最后一行
+由于vi编辑器不能使用鼠标，所以一个大文件如果要到最后一行只用键盘下键的话会是一个很痛苦的过程，还好有各种比较快捷的方法归我们使用：
+1. vi 编辑器中跳到文件的第一行：
+a  输入 :0 或者 :1   回车
+b  键盘按下 小写 gg
+
+2.vi 编辑器跳到文件最后一行：
+a 输入 :$   回车
+b 键盘按下大写 G
+c 键盘按 shift + g    (其实和第二种方法一样)
+
+Vim快速移动光标至行首和行尾
+1、 需要按行快速移动光标时，可以使用键盘上的编辑键Home，快速将光标移动至当前行的行首。除此之外，也可以在命令模式中使用快捷键"^"（即Shift+6）或0（数字0）。
+2、 如果要快速移动光标至当前行的行尾，可以使用编辑键End。也可以在命令模式中使用快捷键"$"（Shift+4）。与快捷键"^"和0不同，快捷键"$"前可以加上数字表示移动的行数。例如使用"1$"表示当前行的行尾，"2$"表示当前行的下一行的行尾。
