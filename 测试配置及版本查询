@@ -1,0 +1,105 @@
+[root@hmm21 SDS_Admin]# cat /etc/onestor_internal_version
+X10000 V200R001B02D010SP01
+ONEStor V500R001B01D010SP01
+UniStorOS V100R001B60D001SP01
+Unisinsight Stor V100R001B05D008
+[root@hmm21 SDS_Admin]# cat /etc/onestor_external_version
+ONEStor-A5110P01
+Release date 2021.12.02
+
+
+[root@hmm21 SDS_Admin]# cat /etc/ceph/ceph.conf
+[global]
+subcluster_iser = False
+background_connect_type = v4
+manage_network_slave = ""
+manage_network_type = v4
+ms_async_connect_dont_route = false
+fsid = d589ebd9-fedf-4dfd-a6a7-2ef50a3525e8
+public_network = 172.23.77.0/24
+mon_initial_members = hmm21, hmm22, hmm23
+mon_host = 172.23.77.21, 172.23.77.22, 172.23.77.23
+auth_cluster_required = cephx
+auth_service_required = cephx
+auth_client_required = cephx
+manage_network = 182.100.0.0/16
+cluster_network = 172.23.78.0/24
+storage_type = bluestore
+bluestore_block_db_size = 10737418240
+bluestore_block_wal_size = 1073741824
+osd_objectstore = bluestore
+ec_os_switch = true
+ms_manage_type = async+posix
+ms_public_type = async+posix
+ms_cluster_type = async+posix
+is_master_subcluster = True
+subcluster_name = nodepool
+public_addr = 172.23.77.21
+manage_addr = 182.100.76.21
+slave_manage_addr = ""
+cluster_addr = 172.23.78.21
+dcache_dirty_page_quota = 8
+dcache_log_quota = 32
+row_max_gc_cache_size = 5381087395
+dcache_clean_page_quota = 8
+row_max_attr_cache_size = 1345271848
+dedup_fp_table_max_mem_size = 12829
+row_max_kv_cache_size = 20179077734
+dedup_fp_cache_max_mem_size = 2048
+local_is_devmgr_installed = False
+local_product_type = UIS R390X G2
+local_is_x10000 = False
+nodepool_name = nodepool
+
+[mon]
+quick_balance = False
+all_manage_ip = 182.100.76.21, 182.100.76.22, 182.100.76.23
+all_public_ip = 172.23.77.21, 172.23.77.22, 172.23.77.23
+all_cluster_ip = 172.23.78.21, 172.23.78.22, 172.23.78.23
+master_zk_id = d589ebd9-fedf-4dfd-a6a7-2ef50a3525e8
+master_mon_manage_ip = 182.100.76.21, 182.100.76.22, 182.100.76.23
+master_mon_public_ip = 172.23.77.21, 172.23.77.22, 172.23.77.23
+master_mon_cluster_ip = 172.23.78.21, 172.23.78.22, 172.23.78.23
+latest_normal_mon = 182.100.76.21
+
+[osd]
+heartbeat_file = /var/lib/ceph/osd/$cluster-$id/heartbeat
+osd_crush_update_on_start = false
+heartbeat_suicide_trace = true
+
+[mds]
+ms_dispatch_throttle_bytes = 4294967296
+debug_objecter = 10
+debug_journaler = 10
+
+[client]
+log_file = /var/log/storage/TGT/ceph-client.$id.log
+rbd_blacklist_expire_seconds = 10
+objecter_tick_interval = 10
+mon_client_hunt_interval = 0.5
+rbd cache = false
+admin_socket = $run_dir/$cluster-$id.$pid.$cctid.asok
+rados_mon_op_timeout = 75
+rados_osd_op_timeout = 75
+client_mount_timeout = 75
+
+[fsclient]
+log_file = /var/log/ceph/$cluster-$name.log
+admin_socket = $run_dir/$cluster-$name.$pid.$cctid.asok
+client_read_qos_type = 2
+client_read_max_iops = 0
+client_read_max_band = 0
+client_write_qos_type = 2
+client_write_max_iops = 0
+client_write_max_band = 0
+debug_client = 1/15
+log_max_recent = 500000
+
+[handy]
+slave = hmm22
+slave_addr = 182.100.76.22
+vip_type = v4
+master_subcluster_ip = 182.100.76.24
+vip = 182.100.76.24
+master = hmm21
+master_addr = 182.100.76.21
