@@ -1,0 +1,141 @@
+安装jdk
+windows下jdk配置
+在控制面板--程序--java--将三台服务器的地址加入信任名单
+● https://182.100.3.146
+● https://182.100.3.147
+● https://182.100.3.148
+安装h3cLinux
+进入控制台
+● 182.100.3.146
+● 182.100.3.147
+● 182.100.3.148
+● admin
+● Password@_
+修改引导方式为UEFI:del/F12
+选择镜像F7
+分区
+1. 只选择一个硬盘，手动分区
+2. 系统缺省为lvm，改为Standard Partition
+3. 点击+
+4. 分区规格：
+● biosboot：2M
+● /boot/efi：512M
+● boot：1024M
+● /var/log：51200M--（50G）
+● swap：2G
+● /：不填，其余空间默认为根分区
+Linux登录：
+● root（SDS_Admin）
+● Admin@123stor
+配置单网口静态IP
+● cd /etc/sysconfig/network-scripts
+● chmod 774 *
+● vim ifcfg-ethA09-0
+● service network restart
+三台服务器都要配置
+
+每台服务器网卡配置：
+oli	ethA09-0（千兆）管理	ethB04-0（万兆）前端	ethB04-1（万兆）后端
+182.100.3.146	182.100.76.21	172.23.77.21	172.23.78.21
+182.100.3.147	182.100.76.22	172.23.77.22	172.23.78.22
+182.100.3.148	182.100.76.23	172.23.77.23	172.23.78.23
+网段	182.100.0.0/16	172.23.77.0/24	172.23.78.0/24
+子网掩码	prefix=16	prefix=24	prefix=24
+客户端
+oli	ethA09-0（千兆）	ethB04-0（万兆）
+182.100.2.163	182.100.76.188	172.23.78.24
+182.100.1.122	182.100.76.20	172.23.78.20
+TYPE="Ethernet"
+PROXY_METHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="static"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="ethA09-1"
+UUID="1e3e9082-868c-4c97-88d2-0c1d0b41cb59"
+DEVICE="ethA09-1"
+ONBOOT="yes"
+HWADDR=d4:61:fe:17:8f:6b
+IPADDR=182.100.76.21
+NETMASK=255.255.255.0-------PREFIX=24管理网16位
+注意关掉其余不使用的网卡ifdown
+修改主机名
+vim /etc/hostname
+● hmm21
+● hmm22
+● hmm23
+修改完重启Linux永久生效
+上传产品包--Handy软件（先上传再解压）
+● 在Linux根目录mkdir ONESTtor，将产品包上传到此文件夹（chmod774 ONEStor）
+● tar -zxvf /ONEStor/xxxx
+● cd /ONEStor/product
+● ./install.sh
+登录Handy管理节点IP（182.100.76.21）
+注意节点管理员密码为Linux登录密码：Admin@123stor
+```bash
+TYPE="Ethernet"
+PROXY_METHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="static"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="ethA09-1"
+UUID="1e3e9082-868c-4c97-88d2-0c1d0b41cb59"
+DEVICE="ethA09-1"
+ONBOOT="yes"
+HWADDR=d4:61:fe:17:8f:6b
+IPADDR=182.100.76.21
+NETMASK=255.255.255.0-------PREFIX=24管理网16位
+注意关掉其余不使用的网卡ifdown
+```
+创建管理高可用
+（管理节点IP需要在管理网段182.100.76.xx）
+
+
+创建完成即可在浏览器输入高可用管理ip182.100.76.24访问Handy
+如果是销毁集群后新建的，应该要清除cookie后才能进入
+
+分配到的客户端
+● 服务器ilo：182.100.2.163----静态IP：182.100.76.188
+● 服务器ilo：182.100.5.252
+
+如何查看网卡是千兆还是万兆
+一、命令详解
+ethtool是Linux下用于查询及设置网卡参数的命令。
+ethtool [options]
+命令选项：
+ethtool ethX /
+ethtool –h //显示ethtool的命令帮助(help)
+ethtool –i ethX //查询ethX网口的相关信息
+ethtool –d ethX //查询ethX网口注册性信息
+ethtool –r ethX //重置ethX网口到自适应模式
+ethtool –S ethX //查询ethX网口收发包统计
+ethtool –s ethX [speed 10|100|1000]\ //设置网口速率10/100/1000M
+[duplex half|full]\ //设置网口半/全双工
+[autoneg on|off]\ //设置网口是否自协商
+[port tp|aui|bnc|mii]\ //设置网口类型
+二、查看过程
+2.1 ifconfig查看网卡信息
+2.1 ethtool查看网卡带宽
+安装jdk
+配置单网口静态IP（要重启网卡、网络服务）
+/etc/sysconfig/network-scripts
+将java添加到过滤名单
+设置主机名（要重启）
+登录182.100.3.146--java控制台
+admin
+Password@_
+Linux登录：
+root（SDS_Admin）
+Admin@123stor
+chmod 777 *
