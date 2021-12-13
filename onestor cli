@@ -1,0 +1,247 @@
+onestor blk [-h] [--peon HOSTS] [-d DATA] [-f {json,verbose}]
+
+                   {
+                   LUN_async_del,
+                   LUN_create,
+                   LUN_csi_create,
+                   LUN_batch_create,
+                   LUN_batch_del,
+                   LUN_delete,
+                   LUN_csi_delete,
+                   LUN_get_perf_info,
+                   LUN_get_basic_info,
+                   LUN_trash_move,
+                   LUN_trash_restore,
+                   LUN_trash_modify,
+                   LUN_trash_delete,
+                   LUN_set_trash_time,
+                   LUN_get_trash_time,
+                   LUN_set_trash_num,
+                   LUN_get_trash_num,
+                   LUN_resize,
+                   LUN_csi_resize,
+                   LUN_rm_before,
+                   LUN_rm_after,
+                   LUN_modify,
+                   LUN_list,
+                   LUN_query,
+                   LUN_clone_query,
+                   LUN_trash_query,
+                   LUN_detail_query,
+                   LUN_query_pool_avail,
+                   LUN_perf_switch,
+                   LUN_perf_switch_batch,
+                   LUN_info_export,
+                   LUN_poolstate_check,
+                   LUN_pgstate_check,
+                   LUN_exist_check,
+                   LUN_query_by_switch,
+                   LUN_image_to_vol,
+                   LUN_vol_to_image,
+                   LUN_get_pool_info,
+                   LUN_rm_file,
+                   LUN_get_avail_space,
+                   LUN_copy_file,
+                   LUN_get_remain_time,
+                   LUN_cas_import,
+                   LUN_query_diskpool_by_pool,
+                   LUN_query_pool_by_diskpool,
+                   LUN_get_pool_name_by_lun_id,
+                   LUN_get_lun_info_by_id_batch,
+                   LUN_get_pool_used_capacity,
+                   LUN_usage_capacity_get,
+                   LUN_list_info,
+                   LUN_get_perf_data_by_nodepool,
+                   LUN_query_qos_by_lun_name,
+                   LUN_group_create,
+                   LUN_group_delete,
+                   LUN_group_modify,
+                   LUN_group_query,
+                   LUN_group_query_by_name,
+                   LUN_group_add,
+                   LUN_group_remove,
+                   LUN_group_exist_check,
+                   LUN_get_client_key,
+                   COPY_create,
+                   COPY_delete,
+                   COPY_modify,
+                   COPY_query,
+                   COPY_detail_query,
+                   COPY_export,
+                   COPY_start,
+                   COPY_stop,
+                   COPY_avllun_query,
+                   SNAP_create_rosnap,
+                   SNAP_create_rosnap_csi,
+                   SNAP_delete_rosnap,
+                   SNAP_delete_rosnap_csi,
+                   SNAP_delete_rosnap_batch,
+                   SNAP_modify_rosnap,
+                   SNAP_set_ctrlflag_rosnap,
+                   SNAP_query_rosnap,
+                   SNAP_query_for_tgt,
+                   SNAP_check_rosnap,
+                   SNAP_rollback_rosnap,
+                   SNAP_purge_rosnap,
+                   SNAP_create_rwsnap,
+                   SNAP_delete_rwsnap_batch,
+                   SNAP_modify_rwsnap,
+                   SNAP_rename_rwsnap,
+                   SNAP_set_ctrlflag_rwsnap,
+                   SNAP_query_rwsnap,
+                   SNAP_check_rwsnap,
+                   SNAP_flatten_rwsnap,
+                   SNAP_show_rwsnap,
+                   SNAP_create_csrosnap,
+                   SNAP_delete_csrosnap_batch,
+                   SNAP_modify_csrosnap,
+                   SNAP_set_ctrlflag_csrosnap,
+                   SNAP_query_csrosnap,
+                   SNAP_check_csrosnap,
+                   SNAP_rollback_csrosnap,
+                   SNAP_create_csrwsnap,
+                   SNAP_delete_csrwsnap_batch,
+                   SNAP_modify_csrwsnap,
+                   SNAP_query_csrwsnap,
+                   SNAP_check_csrwsnap,
+                   SNAP_create_timerjob,
+                   SNAP_delete_timerjob_batch,
+                   SNAP_modify_timerjob,
+                   SNAP_query_timerjob,
+                   SNAP_check_timerjob,
+                   SNAP_query_timerjob_detail,
+                   SNAP_switch_timerjob,
+                   SNAP_query_strategy,
+                   SNAP_task_process,
+                   SNAP_create_volume,
+                   SNAP_create_volume_csi,
+                   SNAP_create_volume_query,
+                   SNAP_revert_volume_query,
+                   CLONE_create_volume,
+                   CLONE_create_volume_csi,
+                   Upgrade_check_vaff,
+                   SNAP_query_process,
+                   SNAP_export,
+                   Csi_query_process,
+                   RMA_create,
+                   RMA_delete,
+                   RMA_modify,
+                   RMA_querysyncrate,
+                   RMA_query,
+                   RMA_groupquery,
+                   RMA_querylun,
+                   RMA_export,
+                   RMA_enpro_second,
+                   RMA_dispro_second,
+                   RMA_startsync,
+                   RMA_split,
+                   RMA_switchRole,
+                   RMA_query_nodepool,
+                   RMA_query_diskpool,
+                   RMA_query_pool,
+                   RMA_upgrade,
+                   RMA_createRWsnap,
+                   RMA_deleteRWsnap,
+                   LINK_addrpool_create,
+                   LINK_addrpool_delete,
+                   LINK_node_add,LINK_node_del,
+                   LINK_device_create,
+                   LINK_device_delete,
+                   LINK_device_query,
+                   LINK_device_query_batch,
+                   LINK_addrpool_query,
+                   LINK_addrpool_detail,
+                   LINK_addrpool_modify,
+                   LINK_get_avail_repnodes,
+                   LINK_addrpool_nodes,
+                   LINK_get_addrpools,
+                   LINK_export,
+                   LINK_modify_remote_ip,
+                   LINK_addrpool_reset,
+                   Migration_create,
+                   Migration_avllun_query,
+                   Migration_delete,
+                   Migration_query,
+                   Migration_modify,
+                   Migration_name_check,
+                   Migration_generate_name,
+                   Migration_split,
+                   Migration_export,
+                   Migration_detail_query
+                   }
+onestor tgt
+onestor tgt [-h] [--peon HOSTS] [-d DATA] [-t TEST_COUNT]
+
+                   {TGT_host_create,TGT_host_group_create,TGT_host_group_delete,TGT_host_group_update,TGT_host_group_get,TGT_host_group_get_in_batch,TGT_host_group_add_host,ISCSI_chap_create,ISCSI_chap_delete,TGT_host_get_by_id,ISCSI_chap_get,ISCSI_chap_get_in_batch,ISCSI_chap_bind,ISCSI_chap_unbind,ISCSI_chap_update,TGT_mapping_get_host_by_hg,TGT_mapping_add_lun,TGT_mapping_remove_lun,TGT_host_group_remove_host,TGT_host_delete_by_id,TGT_host_update,TGT_host_initiator_update,TGT_mapping_initiator_get,TGT_add_map_port,TGT_remove_map_port,TGT_get_port_by_host_group,TGT_get_lun_by_hg,TGT_get_lun_by_host,TGT_get_port_by_host,TGT_host_get_in_batch,TGT_put_block_service_network,TGT_get_block_service_network,TGT_is_name_exist,TGT_get_unused_hg_lun,TGT_get_host_lun_id,TGT_get_host_lun_id_for_cinder,.TGT_transaction_commit,.TGT_transaction_rollback,TGT_map_lun_resize,TGT_get_all_luns,TGT_query_cluster_health,TGT_query_cluster_connects,TGT_get_lun_naa,TGT_get_lun_naa_from_stor_node,TGT_GET_LUNMAP_BY_LUN_ID,TGT_GET_INITIATOR_IN_BATCH,TGT_CHECK_SYSTEM_FOR_CONFIG_OP,TGT_cinder_terminate_connection,TGT_cinder_initialize_connection,TGT_query_hg_by_lun_id,TGT_cinder_terminate_connection_all}
+
+positional arguments:
+  {TGT_host_create,TGT_host_group_create,TGT_host_group_delete,TGT_host_group_update,TGT_host_group_get,TGT_host_group_get_in_batch,TGT_host_group_add_host,ISCSI_chap_create,ISCSI_chap_delete,TGT_host_get_by_id,ISCSI_chap_get,ISCSI_chap_get_in_batch,ISCSI_chap_bind,ISCSI_chap_unbind,ISCSI_chap_update,TGT_mapping_get_host_by_hg,TGT_mapping_add_lun,TGT_mapping_remove_lun,TGT_host_group_remove_host,TGT_host_delete_by_id,TGT_host_update,TGT_host_initiator_update,TGT_mapping_initiator_get,TGT_add_map_port,TGT_remove_map_port,TGT_get_port_by_host_group,TGT_get_lun_by_hg,TGT_get_lun_by_host,TGT_get_port_by_host,TGT_host_get_in_batch,TGT_put_block_service_network,TGT_get_block_service_network,TGT_is_name_exist,TGT_get_unused_hg_lun,TGT_get_host_lun_id,TGT_get_host_lun_id_for_cinder,.TGT_transaction_commit,.TGT_transaction_rollback,TGT_map_lun_resize,TGT_get_all_luns,TGT_query_cluster_health,TGT_query_cluster_connects,TGT_get_lun_naa,TGT_get_lun_naa_from_stor_node,TGT_GET_LUNMAP_BY_LUN_ID,TGT_GET_INITIATOR_IN_BATCH,TGT_CHECK_SYSTEM_FOR_CONFIG_OP,TGT_cinder_terminate_connection,TGT_cinder_initialize_connection,TGT_query_hg_by_lun_id,TGT_cinder_terminate_connection_all}
+
+
+数据库查询
+sudo -u postgres psql calamari--进入数据库
+输入\d可查看列表
+
+resful接口
+curl http://182.100.76.108/api/v3/onestor/bfde936d-e159-4cef-8d82-44144b8e4c00/blk/lun -X POST -d '{"diskpool_name": "Lcx_DiskPool1","pool_name": "Lcx_Block_test_Pool","lun_name": "lcxtesting111","lun_type": "thin","lun_size": 8,"description": "","pool_state": "normal","nodepool_name": "Lcx_NodePool","__async__": true}' -v -H "Cookie: XSRF-TOKEN=YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs; calamari_sessionid=7kyl3pxq9ikgb3msxd6db77i1kol3i0m; token=undefined" -H "X-XSRF-TOKEN: YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs" -H "Content-Type: application/json"
+* About to connect() to 182.100.76.108 port 80 (#0)
+*   Trying 182.100.76.108...
+* Connected to 182.100.76.108 (182.100.76.108) port 80 (#0)
+> POST /api/v3/onestor/bfde936d-e159-4cef-8d82-44144b8e4c00/blk/lun HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: 182.100.76.108
+> Accept: */*
+> Cookie: XSRF-TOKEN=YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs; calamari_sessionid=7kyl3pxq9ikgb3msxd6db77i1kol3i0m; token=undefined
+> X-XSRF-TOKEN: YHI0M8zSwNqGk7dZkMYD40dA7tTf4tHs
+> Content-Type: application/json
+> Content-Length: 221
+>
+* upload completely sent off: 221 out of 221 bytes
+< HTTP/1.1 200 OK
+< Date: Mon, 08 Nov 2021 07:08:45 GMT
+< Server: Apache
+< Vary: Accept,Cookie
+< Allow: GET, POST, DELETE, HEAD, OPTIONS, PATCH
+< Transfer-Encoding: chunked
+< Content-Type: application/json
+<
+* Connection #0 to host 182.100.76.108 left intact
+{"data": {"task_id": "dd19efde-f5c6-4351-8395-7f153b9e3db7"}, "result": [1, "successfully add task \"Create volume \"lcxtesting111\"\"", "\u6210\u529f\u6dfb\u52a0\u4efb\u52a1 \u201c\u521b\u5efa\u5377\u201clcxtesting111\u201d\u201d"], "req_id": -1}
+
+onestor
+ blk                 block storage component
+ fs                  file storage component
+ opt                 load balance component
+ perf                performance component
+ sys                 system component
+ cs                  copyset
+ scrub               scrub component
+ host                host component
+ qos                 quality of service
+ lics                lics component
+ licsserver          licsserver component
+ alarm               onestor alarm sub command tools, please use `onestor
+                     alarm -h` to see detail...
+ handyha             handyha component
+ cm                  cm component
+ task                task queue component
+ obs                 object storage component
+ snmp                snmp component
+ emp                 emp component
+ tgt                 tgt component
+ dm                  dm component
+ um                  um component
+ ha                  ha component
+ operation_log       onestor operation log command tools, please use
+                     `onestor operation_log -h` to see detail...
+ bm                  bond manager
+ pcs                 ip component
+ mc                  multi cluster
+ patch               patch component
+ dev                 dev component
+ nfv                 network function virtualization
+ subcluster          subcluster component
+ proxy               worker proxy
+ aiengine            aiengine component
+ modify              modify component
+ request     
