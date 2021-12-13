@@ -1,0 +1,226 @@
+Onestor测试常用指令
+
+软件解压缩命令
+解压.tar.gz命令	tar -zxvf xxx.tar.gz
+解压gz文件	gunzip xxx.gz
+
+软件安装卸载命令
+安装onestor-cli	dpkg -i onestor-cli
+卸载onestor-cli	dpkg -P onestor-cli
+安装onestor-cli	apt-get install onestor-cli
+卸载onestor-cli	apt-get autoremove onestor-cli
+
+网卡操作命令
+查看网卡信息	ifconfig -a
+修改或配置网卡	/etc/network/interfaces
+
+例如配置eth1网卡 vi /etc/network/interfaces 
+写入
+auto eth1
+iface eth1 inet static
+	address 172.16.105.8
+	netmask 255.255.255.0
+:wq保存退出
+激活网卡eth1	<1>ifdown eth1 && ifup eth1  <2>ifconfig eth1 up
+查看单个网口信息	ethool eth1
+
+磁盘操作命令
+挂载	mount /dev/xxx /u01
+解挂	umount /u01
+NAS挂载	mount -t nfs 172.16.105.172:/ONEStorFS/nfs/mnt/nfs
+分区查看	lsblk
+查看磁盘状态	df -TH
+查看磁盘的文件类型	blkid
+格式化	<1>mkfs.ext4 /dev/sd  <2>mkfs.xfs /dev/sd
+销毁分区	fdisk /dev/sd*  ->d(删除一个分区)  ->p(打印分区表)  ->w(把分区写进分区表，保存并退出)
+
+查看版本文件
+查看cas版本情况	<1>cat /etc/cas_cvk-version  or  <2>cat /etc/h3c_cas_cvk-version
+查看Ubuntu版本	lsb_release -a
+查看onestor外部版本	cat /etc/onestor_external_version
+
+配置文件路径
+ceph配置文件	/etc/ceph/ceph.conf
+calamari配置文件	/etc/calamari.conf
+diamond配置文件	/etc/diamond/diamond.conf
+tgt配置文件	/etc/tgt/targets.conf
+radosgw配置文件	见/etc/ceph/ceph.conf
+高可用配置文件	/etc/keepalived/keepalived.conf
+
+日志文件
+ceph、mon、osd的日志存放路径	
+/var/log/ceph/ceph.log	
+var/log/ceph/ceph-mon.主机名.log	
+var/log/ceph/ceph-osd.i.log	
+calamari.log、alarm.log路径	/var/log/calamari/xxx
+命令执行日志路径	/var/log/operation/xxx.log
+对象网关日志	/var/log/radosgw/client.radosgw.对象网关主机名.log
+
+进程相关命令
+查看当前所有进程	ps -ef
+查看ceph进程//当前节点上的ceph进程	initctl list | grep ceph
+查看某个进程(除去当前查看进程)	
+ceph-mon进程:	ps -ef | grep -v grep | grep ceph-mon
+ceph-osd进程:	ps -ef | grep -v grep | grep ceph-osd
+diamond进程:	ps -ef | grep -v grep | grep diamond
+tgt进程:	ps -ef | grep -v grep | grep tgtd
+radosgw进程:	ps -ef | grep -v grep | grep radosgw
+diamond 启/停/重启服务(停掉之后，它会自动重启)	service diamond start|stop|restart
+target 启/停/重启服务	service tgt start|stop|restart 或者killall -9 tgtd杀掉进程
+keepalived 启/停/重启服务	service keepalived start|stop|restart
+查看端口号被哪个进程占用	lsof -i:端口号
+杀掉进程	kill -9 进程id
+
+Ceph常用指令
+查看ceph版本	ceph -v
+查看信息状态信息	ceph -s
+查看集群健康状态	ceph health
+查看集群健康细节	ceph helth detail
+查看ceph的实时运行状态	ceph -w
+查看ceph状态	ceph status
+查看mon状态信息	ceph mon stat
+查看mon的映射信息	ceph mon dump
+查看主mon	ceph quorum_status
+查看osd的状态信息	ceph osd stat
+查看osd的映射信息	ceph osd dump
+查看ceph存储空间	ceph df
+查看ceph集群中的pool数量	ceph osd lspools
+-	-
+集群销毁方式一：
+检测集群中存在的节点	onestor-cli probe IP(handy节点)	
+销毁集群	将上边探测到的集群都销毁|onestor-cli destroy	
+集群销毁方式二：
+onestor-cli destroy -hosts IP1，···，IPn
+删除一个节点所有的ceph数据包//了解不推荐使用
+查看ceph log日志所在的目录//了解不推荐使用
+删除一个mon节点
+
+池相关指令//了解不推荐使用
+集群中创建池	ceph osd pool create newpol1/池名称 320/pg数
+集群中删除池	ceph osd pool delete p2/池名称/ p2/池名称 --yes-i-really-really-mean-it
+查看集群中的池	ceph osd dump | grep pool
+查看各池所占空间	ceph df detail
+查看池中数据的副本数	ceph osd pool set p2/池名称 size
+查看池的pg数	ceph osd pool get p1/池名称 pg_name
+查看池的pgp数	ceph osd pool get p1/池名称 pgp_num
+查看pg映射信息	ceph pg dump  or  ceph pg dump --format plain
+查看pg的信息//比如：8.61e这个pg的信息	ceph pg map 8.61e
+结果：oadmap e277 pg 8.61e (8.61e) -> up [2,19] acting [2,19]	其中[2,19]代表存储在osd2,osd19节点，osd2代表primary OSD
+查看pg状态	ceph pg stat
+结果：v16021:6648 pgs:6648 activev+clean; 93375 MB data, 180 GB used,8109 GB /8289 GB avail	
+
+OSD相关命令
+查看osd的目录树或id	ceph osd tree
+查看ceph osd运行状态	ceph osd stat
+查看osd映射信息	ceph osd dump
+down掉一个osd硬盘	ceph osd down 0
+stop/start节点上的某个osd	stop|start ceph-osd id=xxx
+在集群中删除一个osd硬盘//osd只有在down状态才可以删除	ceph osd rm 0
+把一个osd节点逐出集群	ceph osd out osd.3
+把逐出的osd加入集群	ceph osd in osd.3
+-	-
+将状态为up且in的osd从集群中删除//慎用	
+step1：踢出集群以使Ceph启动重新均衡、把数据拷贝到其他的OSD	ceph osd out {osd-num/osd.0/0}  执行后其状态变为up且out状态
+step2：停止OSD进程//要在OSD所在的节点进行，SSH登录该节点	stop ceph-osd id=xxx/id=0  此时OSD为down且out状态
+step3：删除CRUSH图的对应OSD条目，它就不再接收数据了	ceph osd crush remove {name/osd.0}
+step4：删除OSD认证密钥	ceph auth del osd.{osd-num}
+step5：删除osd	ceph osd rm {osd-num}
+-	-
+osd迁移	ceph osd crush create-or-move osd.4 1 host=node5//将osd4迁移至node5
+查看集群中osd的最大个数	ceph osd getmaxosd
+设置集群中osd最大数	ceph osd setmaxosd 20
+设置osd crush权重(ceph osd tree可查看权重)//了解不推荐使用	ceph osd crush set 8 0.5 host=ubuntu77
+暂停所有osd//暂停后集群不再接收数据	ceph osd pause
+
+tgt后台常用命令
+查看已创建的target	tgt-admin
+发现iscsi存储(target)	iscsiadm -m node --targetname iqn.2016-01.com.h3c.onestor.test -p 127.0.0.1 -login 命令缩写：isciadm -m node -T iqn.2016-01.com.h3c.onestor.vul2 -p 172.16.36.211:3260 -l
+退出一个target登录	isciadm -m node --targetname iqn.2016-01.com.h3c.onestor.test -p 127.0.0.1 -u
+退出所有target登录	iscsiadm -m node --logoutall=all
+删除iscsi发现记录	iscsiadm -m node -o delete -T tgt3 -p 127.0.0.1
+查看iscsi发现记录	iscsiadm -m node
+查看IQN	cat /etc/iscsi/initiatorname.iscsi
+查看会话连接//iscsi已连接	iscsiadm -m session -P 3
+
+测试工具常用命令
+
+●  Fio读写数据---IOPS测试(bw iops)
+|filename=/dev/sdb1|测试文件名称，通常选择需要测试的盘的data目录，如/dev/rbd1|
+|-|-|
+|direct=1|测试过程绕过机器自带的buffer，使测试结果更加准确|
+|rw=write|测试写的IO|
+|ioengine=libaio引擎使用libaio方式|
+|bs=1M|单次io块的文件大小为16k|
+|size=500G|本次测试的文件大小为5g，以每次4k的io进行|
+|numjobs=16|本次的测试线程为16|
+|runtime=600|测试时间为600s，如果不写则一直将500G的文件分4M每次写完为止|
+|group_reporting|关于显示结果的，汇总每个进程的信息|
+|顺序写|fio --name=test --rw=write --size=500G --numjobs=16 --iodepth=16 --ioengine=libaio --runtime=600 --bs=1M --direct=1 --group_reporting --filename=/dev/sdh|
+|随机写|fio --name=test --rw=randwrite --size=500G --numjobs=16 --iodepth=16 --ioengine=libaio --runtime=600 --bs=4k --direct=1 --group_reporting --filename=/dev/sdh|
+|顺序读|fio --name=test --rw=read --size=500G --numjobs=16 --iodepath=16 --ioengine=libaio --runtime=600 --bs=1M --direct=1 --group_reporting --filename=/dev/sdh|
+|随机读|fio --name=test --rw=read --size=500G --numjobs=16 --iodepth=16 --ioengine=libaio --runtime=600 --bs=4k --direct=1 --group_reporting --filename=/dev/sdh| 
+●  dd读写数据--测试硬盘读写速度--参数说明
+|if=|输入文件(或设备名称)如/dev/zero|
+|-|-|
+|of=|输出文件(或设备名称)如/dev/null|
+|oflag与iflag指定读写的模式，如iflag=direct.nonblack direct模式就是把写入请求直接封装成io指令发送到磁盘，而不使用文件系统的buffer cache|
+|bs表示一次io读的规模，理论上bs越大，所测得性能越高|
+|count是读多少个"bs"|
+|写测试|dd if=/dev/zero of=/dev/sdh bs=1024k count=1024000|
+|因为/dev/zero是一个伪设备，它只产生空字符流，对它不会产生IO，所以，IO都会集中在of文件中，of文件只用于写，所以这个命令相当于测试磁盘的写能力|
+|读测试|dd iflag=direct.nonblock if/dev/sda2 of=/dev/null bs=8k count=8388608|
+|因为/dev/sda2是一个物理分区，对它的读取会产生IO，/dev/null是伪设备，相当于黑洞，输出到该设备不会产生IO，所以，这个命令的IO只发生在/dev/sdb1上，也相当于测试磁盘的读能力|
+|读写测试|dd iflag=direct.nonblock oflag=direct.nonblock if/dev/sdh of=/opt/iotest bs=8k count=8388608| 
+●  rados bench读/写数据——对象读写性能——参数说明 
+●  rados bench seconds -p pool -b objsize -t threads mode
+|seconds|测试多长时间|
+|-|-|
+|pool|数据写入pool名字，不指定写入到data的pool当中|
+|objsize|每次写入的对象大小，默认为4M|
+|threads|并发的线程数，默认为16|
+|node|支持write、seq、 or rand和seq and rand benchmarks(pool相关的参数：pool的PG number，pool的副本数)|
+|写数据|rados bench 1200 write -p pool3 --no-cleanup//往池里写(--no-cleanup数据保留，可用于读操作)|
+|读数据|rados bench 1200 read -p pool3| 
+
+文件拷贝
+复制文件(同一台主机)	cp /etc/hosts /etc/onestor_hosts
+拷贝文件到另一台机器命令	scp /etc/diamond.conf 192.168.205.6:/etc/diamond/diamond.conf
+
+邮件服务器
+
+●  集群配置邮件服务器之前要先登录服务器创建邮件用户
+
+|增加用户|useradd -g mail -s /sbin/nologin username|
+|-|-|
+|修改用户密码|passwd username| 
+
+●  Foxmail配置：
+-- 账号设置
+
+|Email地址|syy@mailserver.com|
+|-|-|
+|密码|xxxxxx|
+|显示名称|mailserver(syy)|
+|发信名称|syy@mailserver.com|
+|账号活动|定时收取邮件 每隔2分钟|
+|服务器|
+|邮箱类型|POP3|
+|账号|syy@mailserver.com|
+|收件服务器|172.16.108.190 SSL 端口995|
+|发件服务器|172.16.108.190 SSL 端口465|
+|服务器备份|邮件收取后，在服务器上永久保留|
+|发件服务器身份验证|和收件服务器相同| 
+
+Linux命令
+查看上次重启时间	last reboot
+不重启主机修改主机名	echo cas11>/proc/sys/kernel/hostname&&cas11>/etc/hostname
+
+D006一键安装功能使用方法
+
+Step1：挂载镜像后重启自动安装系统
+Step2：登录任意一台主机ilo口，使用ifconfig查看dhcp分配到的ip
+Step3：使用winscp拷贝/opt/onestor_packages/ONEStor_Deploy_Template.xls文件到pc，并填写所有节点信息。规格见附件
+Step4：拷贝填好的ONEStor_Deploy_Template.xls到任意节点任意目录下，默认可以拷贝到/etc下
+Step5：使用onestor-cli deploy_conf --cfg_path* 下发配置，使用onestor-cli deploy_conf默认执行/etc下的ONEStor_Deploy_Template.xls
+Step6：使用daixinchun之前的面license方法给每个节点配置免license
+Step7：进行/opt/onestor_package/下，解压onestor软件包并安装部署
